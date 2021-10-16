@@ -1,0 +1,29 @@
+version: "3"
+
+networks:
+  forntend_network:
+    driver: "bridge"
+
+services:
+  nuxt:
+    build:
+      context: .
+    container_name: nuxt
+    restart: always
+    networks:
+      - forntend_network
+    command:
+      "npm run start"
+      
+  nginx:
+    image: nginx:1.19
+    container_name: nginx
+    ports:
+      - "3000:80"
+    volumes:
+      - ./Docker/nginx:/etc/nginx/conf.d
+    depends_on:
+      - nuxt
+    networks:
+      - forntend_network
+

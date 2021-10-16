@@ -1,0 +1,19 @@
+image: node:latest
+
+.init_ssh: &init_ssh |
+  which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
+  eval $(ssh-agent -s)
+  echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+  mkdir -p ~/.ssh
+  chmod 700 ~/.ssh
+  [[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+
+stages:
+  - deploy
+deploy:
+  stage: deploy
+  script:
+    - *init_ssh
+    - ssh user@server "cd /home/user/www/nuxt && git pull origin && docker-compose up --build -d && exit"
+  only:
+    - master
